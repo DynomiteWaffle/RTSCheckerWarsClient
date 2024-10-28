@@ -1,0 +1,13 @@
+Server
+
+Send Turn
+Send Player Turn
+
+
+Client
+
+Get Map
+Get Turn
+Send Move
+Join
+Quit
