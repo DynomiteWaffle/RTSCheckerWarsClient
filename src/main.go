@@ -17,16 +17,19 @@ type displayMap struct {
 	s int
 	x int
 	y int
+	p int
 }
 
 var pallette []color.Color = slices.Repeat([]color.Color{color.White}, 255)
 
 var Map displayMap = displayMap{
-	m: "012111310",
-	w: 3,
-	s: 20,
-	x: 1,
-	y: 1,
+	m: ``,
+	// m:  "�",
+	w: 3,  //width
+	s: 20, // scale
+	x: 1,  // origin x
+	y: 1,  //origin y
+	p: 2,  //padding
 }
 
 type Game struct{}
@@ -39,10 +42,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "Hello, World!")
 	// draw map
 	for i := 0; i < len(Map.m); i++ {
-		fmt.Println(int(Map.m[i]) - 48)
 		var Colum int = i % Map.w
 		var Row int = i / Map.w
-		vector.DrawFilledRect(screen, float32((Map.x+Colum)*Map.s), float32((Map.y+Row)*Map.s), float32(Map.s), float32(Map.s), pallette[int(Map.m[i])-48], true)
+		vector.DrawFilledRect(screen, float32((Map.x+Colum)*Map.s), float32((Map.y+Row)*Map.s), float32(Map.s-Map.p), float32(Map.s-Map.p), pallette[int(Map.m[i])], true)
 	}
 }
 
@@ -51,8 +53,10 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
+	Map.m += string(0) + string(1) + string(2) + string(1) + string(1) + string(1) + string(3) + string(1) + string(0) // test map
+	fmt.Sprint(Map.m)
 	ebiten.SetWindowSize(640, 480)
-	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetWindowTitle("CheckerWars")
 	// TODO Build Color Pallette
 	pallette[0] = color.RGBA{R: 0, G: 0, B: 0, A: 255}
 	pallette[1] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
