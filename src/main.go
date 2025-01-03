@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"log"
 	"slices"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -22,11 +23,20 @@ type displayMap struct {
 var pallette []color.Color = slices.Repeat([]color.Color{color.White}, 255)
 
 // TODO convert json hex map to array of ints
+func Hex2Map(input string) []int {
+	var nums []int = []int{}
+	for i := 0; i < len(input); i += 2 {
+		// fmt.Println(input[i : i+2])
+		num, _ := strconv.ParseInt(input[i:i+2], 16, 16)
+		nums = append(nums, int(num))
+
+	}
+	return nums
+}
 
 var Map displayMap = displayMap{
 	m: []int{},
-	// m:  "�",
-	w: 10, //width
+	w: 3,  //width
 	s: 20, // scale
 	x: 1,  // origin x
 	y: 1,  //origin y
@@ -45,7 +55,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for i := 0; i < len(Map.m); i++ {
 		var Colum int = i % Map.w
 		var Row int = i / Map.w
-		vector.DrawFilledRect(screen, float32((Map.x+Colum)*Map.s), float32((Map.y+Row)*Map.s), float32(Map.s-Map.p), float32(Map.s-Map.p), pallette[int(Map.m[i])], true)
+		vector.DrawFilledRect(screen, float32((Map.x+Colum)*Map.s), float32((Map.y+Row)*Map.s), float32(Map.s-Map.p), float32(Map.s-Map.p), pallette[Map.m[i]], true)
 	}
 }
 
@@ -54,7 +64,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	Map.m += string(0) + string(1) + string(2) + string(1) + string(1) + string(1) + string(3) + string(1) + string(0) // test map
+	Map.m = Hex2Map("000102010101030100")
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("CheckerWars")
 	// TODO Build Color Pallette
