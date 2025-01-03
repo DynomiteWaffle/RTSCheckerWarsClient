@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"log"
 	"slices"
@@ -12,7 +11,7 @@ import (
 )
 
 type displayMap struct {
-	m string
+	m []int
 	w int
 	s int
 	x int
@@ -22,10 +21,12 @@ type displayMap struct {
 
 var pallette []color.Color = slices.Repeat([]color.Color{color.White}, 255)
 
+// TODO convert json hex map to array of ints
+
 var Map displayMap = displayMap{
-	m: ``,
+	m: []int{},
 	// m:  "�",
-	w: 3,  //width
+	w: 10, //width
 	s: 20, // scale
 	x: 1,  // origin x
 	y: 1,  //origin y
@@ -54,7 +55,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	Map.m += string(0) + string(1) + string(2) + string(1) + string(1) + string(1) + string(3) + string(1) + string(0) // test map
-	fmt.Sprint(Map.m)
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("CheckerWars")
 	// TODO Build Color Pallette

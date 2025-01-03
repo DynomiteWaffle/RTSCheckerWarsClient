@@ -1,0 +1,33 @@
+format 1
+-info 
+name string
+author string
+format int
+width int
+
+
+
+
+
+-map data uses blocks 00-ff (ff is one block)
+    eg
+000102010101030100=012111310
+
+
+
+format 2
+-info 
+name string
+author string
+format int
+width int
+ids array
+    eg
+    {a,b,c,d}
+
+
+
+
+-map data uses ids array to represent map data
+    eg
+abcbbbdba=012111310
