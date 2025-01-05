@@ -15,9 +15,12 @@ type displayMap struct {
 	m []int
 	w int
 	s int
+	o point
+	p int
+}
+type point struct {
 	x int
 	y int
-	p int
 }
 
 var pallette []color.Color = slices.Repeat([]color.Color{color.White}, 255)
@@ -38,24 +41,46 @@ var Map displayMap = displayMap{
 	m: []int{},
 	w: 3,  //width
 	s: 20, // scale
-	x: 1,  // origin x
-	y: 1,  //origin y
 	p: 2,  //padding
 }
+var mouseDist point
+var oldMousePos point
+var scrollSpeed int = 10
 
 type Game struct{}
 
 func (g *Game) Update() error {
+	// move map
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
+		mouseDist.x, mouseDist.y = ebiten.CursorPosition()
+		mouseDist.x -= oldMousePos.x
+		mouseDist.y -= oldMousePos.y
+
+	} else {
+		oldMousePos.x, oldMousePos.y = ebiten.CursorPosition()
+		Map.o.x += mouseDist.x
+		Map.o.y += mouseDist.y
+		mouseDist.x, mouseDist.y = 0, 0
+
+	}
+	// zoom map
+	var _, wheel = ebiten.Wheel()
+	Map.s += int(wheel) * scrollSpeed
+	if Map.s < 1 {
+		Map.s = 1
+	}
+	// TODO mobile touches
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrint(screen, "Hello, World!")
+	ebitenutil.DebugPrint(screen, "Hello World")
 	// draw map
 	for i := 0; i < len(Map.m); i++ {
 		var Colum int = i % Map.w
 		var Row int = i / Map.w
-		vector.DrawFilledRect(screen, float32((Map.x+Colum)*Map.s), float32((Map.y+Row)*Map.s), float32(Map.s-Map.p), float32(Map.s-Map.p), pallette[Map.m[i]], true)
+		vector.DrawFilledRect(screen, float32(mouseDist.x+Map.o.x+(Colum)*Map.s), float32(mouseDist.y+Map.o.y+(Row)*Map.s), float32(Map.s-Map.p), float32(Map.s-Map.p), pallette[Map.m[i]], true)
 	}
 }
 
