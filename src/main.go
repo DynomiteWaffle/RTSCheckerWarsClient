@@ -64,12 +64,13 @@ func (g *Game) Update() error {
 
 	}
 	// zoom map
+	// TODO zoom from center
 	var _, wheel = ebiten.Wheel()
 	Map.s += int(wheel) * scrollSpeed
 	if Map.s < 1 {
 		Map.s = 1
 	}
-	// TODO mobile touches
+	// TODO mobile touches/pans
 
 	return nil
 }
