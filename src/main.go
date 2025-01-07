@@ -46,10 +46,14 @@ var Map displayMap = displayMap{
 var mouseDist point
 var oldMousePos point
 var scrollSpeed int = 10
+var windowScale int
 
 type Game struct{}
 
 func (g *Game) Update() error {
+	// window scale
+	var w, _ = ebiten.WindowSize()
+	windowScale = w / 8
 	// move map
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
 		mouseDist.x, mouseDist.y = ebiten.CursorPosition()
@@ -67,32 +71,32 @@ func (g *Game) Update() error {
 	// TODO zoom from center
 	var _, wheel = ebiten.Wheel()
 	Map.s += int(wheel) * scrollSpeed
-	if Map.s < 1 {
-		Map.s = 1
-	}
-	// TODO mobile touches/pans
+	// TODO translate to old origin
 
+	// TODO mobile touches/pans
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrint(screen, "Hello World")
+	var scale = Map.s + windowScale
 	// draw map
 	for i := 0; i < len(Map.m); i++ {
 		var Colum int = i % Map.w
 		var Row int = i / Map.w
-		vector.DrawFilledRect(screen, float32(mouseDist.x+Map.o.x+(Colum)*Map.s), float32(mouseDist.y+Map.o.y+(Row)*Map.s), float32(Map.s-Map.p), float32(Map.s-Map.p), pallette[Map.m[i]], true)
+		vector.DrawFilledRect(screen, float32(mouseDist.x+Map.o.x+(Colum)*scale), float32(mouseDist.y+Map.o.y+(Row)*scale), float32(scale-Map.p), float32(scale-Map.p), pallette[Map.m[i]], true)
 	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 320, 240
+	return outsideWidth, outsideHeight
 }
 
 func main() {
 	Map.m = Hex2Map("000102010101030100")
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("CheckerWars")
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// TODO Build Color Pallette
 	pallette[0] = color.RGBA{R: 0, G: 0, B: 0, A: 255}
 	pallette[1] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
