@@ -47,6 +47,10 @@ var mouseDist point
 var oldMousePos point
 var scrollSpeed int = 10
 var windowScale int
+var touches []ebiten.TouchID
+
+// temp
+var debugText string
 
 type Game struct{}
 
@@ -55,11 +59,19 @@ func (g *Game) Update() error {
 	var w, _ = ebiten.WindowSize()
 	windowScale = w / 8
 	// move map
+	touches = ebiten.AppendTouchIDs(touches)
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
 		mouseDist.x, mouseDist.y = ebiten.CursorPosition()
 		mouseDist.x -= oldMousePos.x
 		mouseDist.y -= oldMousePos.y
 
+	} else if len(touches) > 0 {
+		mouseDist.x, mouseDist.y = ebiten.TouchPosition(touches[0])
+		// second touch can be used for paning/zooming
+		// DEBUG
+		debugText = strconv.Itoa(mouseDist.x) + ":" + strconv.Itoa(mouseDist.y) + "\n" + debugText
+		mouseDist.x -= Map.o.x
+		mouseDist.y -= Map.o.y
 	} else {
 		oldMousePos.x, oldMousePos.y = ebiten.CursorPosition()
 		Map.o.x += mouseDist.x
@@ -78,7 +90,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrint(screen, "Hello World")
+	ebitenutil.DebugPrint(screen, debugText)
 	var scale = Map.s + windowScale
 	// draw map
 	for i := 0; i < len(Map.m); i++ {
@@ -94,6 +106,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 func main() {
 	Map.m = Hex2Map("000102010101030100")
+	Map.o.y = 20
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("CheckerWars")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
