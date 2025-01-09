@@ -3,12 +3,12 @@ package main
 import (
 	"image/color"
 	"log"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
-
-// TODO web wont render
 
 // | 0 - toggle pan/select |
 // 1 - zoom in |
@@ -17,6 +17,7 @@ import (
 var buttons = [4]Button{}
 var barScale = 12
 var panning = false
+var barHeight float64
 
 var (
 	r = color.RGBA{R: 255, G: 0, B: 0, A: 255}
@@ -50,10 +51,18 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	var width, height = ebiten.WindowSize()
-	vector.DrawFilledRect(screen, 0, 0, float32(width), float32(height)/float32(barScale), color.White, true)
-	// draw buttons
-	var barHeight float64
+	// web being weird
 	barHeight = float64(height) / float64(barScale)
+	if height == 0 {
+		height = 2048
+		barHeight = 50
+	}
+	if width == 0 {
+		width = 2048
+	}
+	ebitenutil.DebugPrint(screen, "\n\n\n\n"+strconv.Itoa(width)+":"+strconv.Itoa(height))
+	vector.DrawFilledRect(screen, 0, 0, float32(width), float32(barHeight), color.White, true)
+	// draw buttons
 	// distance from left edge, buttons get added to this
 	var dist = 0.0
 	var op = &ebiten.DrawImageOptions{}
@@ -76,8 +85,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op.GeoM.Reset()
 		}
 	}
-	// screen.DrawImage(buttons[0].icon1, op)
-
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -85,7 +92,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	ebiten.SetWindowSize(640, 480)
+	// ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("CheckerWars")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	buttons[0].icon1 = ebiten.NewImage(20, 20)
