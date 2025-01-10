@@ -3,7 +3,6 @@ package main
 import (
 	"image/color"
 	"log"
-	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -18,14 +17,18 @@ var buttons = [4]Button{}
 var barScale = 12
 var panning = false
 var barHeight float64
+var gray = color.RGBA{R: 20, G: 20, B: 20, A: 255}
 
+// debug
 var (
 	r = color.RGBA{R: 255, G: 0, B: 0, A: 255}
 	g = color.RGBA{R: 0, G: 255, B: 0, A: 255}
 	b = color.RGBA{R: 0, G: 0, B: 255, A: 255}
 )
 
-type Game struct {
+type Piece struct {
+	piece   int
+	timeout int
 }
 
 type Button struct {
@@ -44,6 +47,12 @@ func (b *Button) Toggle() {
 	}
 }
 
+type Game struct {
+	Map      []Piece
+	MapWidth int
+	MapType  int
+}
+
 func (g *Game) Update() error {
 	// TODO click/activate buttons
 	return nil
@@ -54,14 +63,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// web being weird
 	barHeight = float64(height) / float64(barScale)
 	if height == 0 {
-		height = 2048
+		height = 1080
 		barHeight = 50
 	}
 	if width == 0 {
-		width = 2048
+		width = 1080
 	}
-	ebitenutil.DebugPrint(screen, "\n\n\n\n"+strconv.Itoa(width)+":"+strconv.Itoa(height))
 	vector.DrawFilledRect(screen, 0, 0, float32(width), float32(barHeight), color.White, true)
+	// message for web with too big screen
+	vector.DrawFilledRect(screen, float32(width), 0, float32(width), 1080, gray, true)
+	ebitenutil.DebugPrintAt(screen, "get the app for fullscreen", width+10, 0)
+	ebitenutil.DebugPrintAt(screen, "github.com/DynomiteWaffle/CheckerWarsClient", width+10, 30) //github link
+	ebitenutil.DebugPrintAt(screen, "dynomitewaffle.itch.io/checker-wars", width+10, 50)         //itch.io link
 	// draw buttons
 	// distance from left edge, buttons get added to this
 	var dist = 0.0
@@ -84,6 +97,12 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			dist += float64(buttons[b].icon2.Bounds().Dx()) * scale
 			op.GeoM.Reset()
 		}
+	}
+	// draw map/settings
+	if buttons[3].toggle {
+		// draw map
+	} else {
+		// draw settings
 	}
 }
 
@@ -108,4 +127,26 @@ func main() {
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// button functions
+// TODO these functions
+func quit(toggle bool)           {}
+func zoomIn(toggle bool)         {}
+func zoomOut(toggle bool)        {}
+func togglePan(toggle bool)      {}
+func toggleSettings(toggle bool) {} // ingnore
+
+// TODO
+func readMap(Map string) []Piece {
+	// get map format
+	// prosses map format
+	switch 1 {
+	case 1:
+		break
+	case 2:
+		break
+	}
+	// return prossesed map format
+	return []Piece{}
 }
