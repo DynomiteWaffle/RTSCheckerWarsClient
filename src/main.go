@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"log"
 	"strconv"
@@ -19,6 +20,7 @@ var barScale = 12
 var panning = false
 var barHeight float64
 var gray = color.RGBA{R: 20, G: 20, B: 20, A: 255}
+var prevClick bool
 
 // debug
 var (
@@ -37,7 +39,7 @@ type Button struct {
 	toggle    bool
 	togglable bool
 	icon1     *ebiten.Image
-	icon2     ebiten.Image
+	icon2     *ebiten.Image
 }
 
 func (b *Button) Toggle() {
@@ -55,7 +57,49 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	// TODO click/activate buttons
+	// click/activate buttons
+	var clicked, x, y = getClick()
+	// click buttons only once
+	if !clicked {
+		prevClick = false
+	}
+	// main button loop loop
+	if !prevClick && clicked && y > 0 && y < int(barHeight) {
+		prevClick = true
+		var offset = 0
+		for b := 0; b < len(buttons); b++ {
+			if !buttons[b].toggle {
+				// icon 1
+				var scale = barHeight / float64(buttons[b].icon1.Bounds().Dy())
+				// in x bounds
+				if x > offset && x < offset+buttons[b].icon1.Bounds().Dx()*int(scale) {
+					if buttons[b].togglable {
+						buttons[b].Toggle()
+					}
+					buttons[b].run(buttons[b].toggle)
+				}
+				// add to offset
+				offset += buttons[b].icon1.Bounds().Dx() * int(scale)
+
+			} else {
+				// icon 2
+				var scale = barHeight / float64(buttons[b].icon2.Bounds().Dy())
+				// in x bounds
+				if x > offset && x < offset+buttons[b].icon2.Bounds().Dx()*int(scale) {
+					if buttons[b].togglable {
+						buttons[b].Toggle()
+					}
+					buttons[b].run(buttons[b].toggle)
+				}
+				// add to offset
+				offset += buttons[b].icon2.Bounds().Dx() * int(scale)
+			}
+		}
+	} else if clicked {
+		prevClick = true
+		// do something else with mouse input
+	}
+
 	return nil
 }
 
@@ -85,6 +129,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	var op = &ebiten.DrawImageOptions{}
 	for b := 0; b < len(buttons); b++ {
 		if !buttons[b].toggle {
+			// icon 1
 			// scale image
 			var scale = barHeight / float64(buttons[b].icon1.Bounds().Dy())
 			op.GeoM.Scale(float64(scale), float64(scale))
@@ -93,11 +138,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			dist += float64(buttons[b].icon1.Bounds().Dx()) * scale
 			op.GeoM.Reset()
 		} else {
-			// TODO draw icon 2
+			// icon 2
 			var scale = barHeight / float64(buttons[b].icon2.Bounds().Dy())
 			op.GeoM.Scale(float64(scale), float64(scale))
 			op.GeoM.Translate(float64(dist), 0)
-			screen.DrawImage(&buttons[b].icon2, op)
+			screen.DrawImage(buttons[b].icon2, op)
 			dist += float64(buttons[b].icon2.Bounds().Dx()) * scale
 			op.GeoM.Reset()
 		}
@@ -119,14 +164,34 @@ func main() {
 	ebiten.SetWindowTitle("CheckerWars")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// temp colors/button icons
-	buttons[0].icon1 = ebiten.NewImage(20, 20)
+	buttons[0].icon1 = ebiten.NewImage(30, 20)
 	buttons[0].icon1.Fill(color.Black)
+	buttons[0].icon2 = ebiten.NewImage(30, 20)
+	buttons[0].icon2.Fill(color.White)
+	buttons[0].run = func(toggle bool) {
+		if toggle {
+			fmt.Println("Button1 toggle 1")
+		} else {
+			fmt.Println("Button1 toggle 2")
+
+		}
+	}
+	buttons[0].togglable = true
 	buttons[1].icon1 = ebiten.NewImage(40, 40)
 	buttons[1].icon1.Fill(r)
+	buttons[1].run = func(toggle bool) {
+		fmt.Println("Button2")
+	}
 	buttons[2].icon1 = ebiten.NewImage(20, 20)
 	buttons[2].icon1.Fill(g)
+	buttons[2].run = func(toggle bool) {
+		fmt.Println("Button3")
+	}
 	buttons[3].icon1 = ebiten.NewImage(20, 20)
 	buttons[3].icon1.Fill(b)
+	buttons[3].run = func(toggle bool) {
+		fmt.Println("Button4")
+	}
 	// setup buttons
 	//
 	if err := ebiten.RunGame(&Game{}); err != nil {
