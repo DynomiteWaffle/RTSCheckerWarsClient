@@ -3,6 +3,7 @@ package main
 import (
 	"image/color"
 	"log"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -75,6 +76,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrintAt(screen, "get the app for fullscreen", width+10, 0)
 	ebitenutil.DebugPrintAt(screen, "github.com/DynomiteWaffle/CheckerWarsClient", width+10, 30) //github link
 	ebitenutil.DebugPrintAt(screen, "dynomitewaffle.itch.io/checker-wars", width+10, 50)         //itch.io link
+	// Debug click info
+	var b, x, y = getClick()
+	ebitenutil.DebugPrintAt(screen, strconv.FormatBool(b)+" : "+strconv.Itoa(x)+" : "+strconv.Itoa(y), 0, 80)
 	// draw buttons
 	// distance from left edge, buttons get added to this
 	var dist = 0.0
@@ -114,6 +118,7 @@ func main() {
 	// ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("CheckerWars")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	// temp colors/button icons
 	buttons[0].icon1 = ebiten.NewImage(20, 20)
 	buttons[0].icon1.Fill(color.Black)
 	buttons[1].icon1 = ebiten.NewImage(40, 40)
@@ -149,4 +154,39 @@ func readMap(Map string) []Piece {
 	}
 	// return prossesed map format
 	return []Piece{}
+}
+
+// Returns if clicked,x,y
+func getClick() (bool, int, int) {
+	// vars
+	var (
+		succeded bool = false
+		x        int
+		y        int
+		touches  []ebiten.TouchID
+	)
+	// update touches
+	touches = ebiten.AppendTouchIDs(touches)
+	// if empty look at mouse
+	if len(touches) == 0 {
+		// mouse is pressed
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButton0) {
+			succeded = true
+		}
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButton1) {
+			succeded = true
+		}
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButton2) {
+			succeded = true
+		}
+		// mouse pos
+		x, y = ebiten.CursorPosition()
+
+	} else {
+		succeded = true
+		// touches
+		x, y = ebiten.TouchPosition(0)
+	}
+
+	return succeded, x, y
 }
