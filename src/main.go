@@ -40,6 +40,7 @@ type Button struct {
 	togglable bool
 	icon1     *ebiten.Image
 	icon2     *ebiten.Image
+	x         float64
 }
 
 func (b *Button) Toggle() {
@@ -66,34 +67,32 @@ func (g *Game) Update() error {
 	// main button loop loop
 	if !prevClick && clicked && y > 0 && y < int(barHeight) {
 		prevClick = true
-		var offset = 0
+		// var offset = 0
 		for b := 0; b < len(buttons); b++ {
 			if !buttons[b].toggle {
 				// icon 1
 				var scale = barHeight / float64(buttons[b].icon1.Bounds().Dy())
 				// in x bounds
-				if x > offset && x < offset+buttons[b].icon1.Bounds().Dx()*int(scale) {
+				if x > int(buttons[b].x) && x < int(buttons[b].x)+buttons[b].icon1.Bounds().Dx()*int(scale) {
 					if buttons[b].togglable {
 						buttons[b].Toggle()
 					}
 					buttons[b].run(buttons[b].toggle)
 				}
-				// add to offset
-				offset += buttons[b].icon1.Bounds().Dx() * int(scale)
 
 			} else {
 				// icon 2
 				var scale = barHeight / float64(buttons[b].icon2.Bounds().Dy())
 				// in x bounds
-				if x > offset && x < offset+buttons[b].icon2.Bounds().Dx()*int(scale) {
+				if x > int(buttons[b].x) && x < int(buttons[b].x)+buttons[b].icon2.Bounds().Dx()*int(scale) {
 					if buttons[b].togglable {
 						buttons[b].Toggle()
 					}
 					buttons[b].run(buttons[b].toggle)
 				}
-				// add to offset
-				offset += buttons[b].icon2.Bounds().Dx() * int(scale)
+
 			}
+
 		}
 	} else if clicked {
 		prevClick = true
@@ -122,7 +121,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	ebitenutil.DebugPrintAt(screen, "dynomitewaffle.itch.io/checker-wars", width+10, 50)         //itch.io link
 	// Debug click info
 	var b, x, y = getClick()
-	ebitenutil.DebugPrintAt(screen, strconv.FormatBool(b)+" : "+strconv.Itoa(x)+" : "+strconv.Itoa(y), 0, 80)
+	ebitenutil.DebugPrintAt(screen, strconv.FormatBool(b)+" : "+strconv.Itoa(x)+" : "+strconv.Itoa(y), width+10, 80)
 	// draw buttons
 	// distance from left edge, buttons get added to this
 	var dist = 0.0
@@ -135,6 +134,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op.GeoM.Scale(float64(scale), float64(scale))
 			op.GeoM.Translate(float64(dist), 0)
 			screen.DrawImage(buttons[b].icon1, op)
+			buttons[b].x = dist
 			dist += float64(buttons[b].icon1.Bounds().Dx()) * scale
 			op.GeoM.Reset()
 		} else {
@@ -143,15 +143,18 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			op.GeoM.Scale(float64(scale), float64(scale))
 			op.GeoM.Translate(float64(dist), 0)
 			screen.DrawImage(buttons[b].icon2, op)
+			buttons[b].x = dist
 			dist += float64(buttons[b].icon2.Bounds().Dx()) * scale
 			op.GeoM.Reset()
 		}
 	}
 	// draw map/settings
 	if buttons[3].toggle {
-		// draw map
+		// TODO draw map
+		ebitenutil.DebugPrintAt(screen, "MAP", 100, 100)
 	} else {
-		// draw settings
+		// TODO draw settings
+		ebitenutil.DebugPrintAt(screen, "Settings", 100, 100)
 	}
 }
 
@@ -187,8 +190,11 @@ func main() {
 	buttons[2].run = func(toggle bool) {
 		fmt.Println("Button3")
 	}
+	buttons[3].togglable = true
 	buttons[3].icon1 = ebiten.NewImage(20, 20)
 	buttons[3].icon1.Fill(b)
+	buttons[3].icon2 = ebiten.NewImage(20, 20)
+	buttons[3].icon2.Fill(color.White)
 	buttons[3].run = func(toggle bool) {
 		fmt.Println("Button4")
 	}
@@ -201,11 +207,10 @@ func main() {
 
 // button functions
 // TODO these functions
-func quit(toggle bool)           {}
-func zoomIn(toggle bool)         {}
-func zoomOut(toggle bool)        {}
-func togglePan(toggle bool)      {}
-func toggleSettings(toggle bool) {} // ingnore
+func quit(toggle bool)      {}
+func zoomIn(toggle bool)    {}
+func zoomOut(toggle bool)   {}
+func togglePan(toggle bool) {}
 
 // TODO
 func readMap(Map string) []Piece {
