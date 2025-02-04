@@ -22,6 +22,17 @@ var barHeight float64
 var gray = color.RGBA{R: 20, G: 20, B: 20, A: 255}
 var prevClick bool
 
+var Zoom float64 = 2
+var ZoomSpeed float64 = 0.2
+
+// TODO init centered
+var originX = 200
+var originY = 200
+
+// old mouse pos
+var OldOrignX int = -1
+var OldOrignY int = -1
+
 // debug
 var (
 	r = color.RGBA{R: 255, G: 0, B: 0, A: 255}
@@ -55,9 +66,15 @@ type Game struct {
 	Map      []Piece
 	MapWidth int
 	MapType  int
+	Init     bool
 }
 
 func (g *Game) Update() error {
+	// TODO activate buttons based on the mouse
+	// right click should auto pan
+	// left auto select
+	// scroll zoom in/out
+
 	// click/activate buttons
 	var clicked, x, y = getClick()
 	// click buttons only once
@@ -97,6 +114,24 @@ func (g *Game) Update() error {
 	} else if clicked {
 		prevClick = true
 		// do something else with mouse input
+		// operate out of button bar
+		if y > int(barHeight) {
+			// pan screen
+			if buttons[0].toggle {
+
+				// move
+				if OldOrignX == -1 {
+					OldOrignX = originX - x
+					OldOrignY = originY - y
+				}
+				originX = x + OldOrignX
+				originY = y + OldOrignY
+			}
+		}
+	} else {
+		// mouse up
+		OldOrignX = -1
+		OldOrignY = -1
 	}
 
 	return nil
@@ -113,6 +148,28 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	if width == 0 {
 		width = 1080
 	}
+	// draw map/settings
+	if buttons[3].toggle {
+		// TODO make it proper size
+		var MapOpt = &ebiten.DrawImageOptions{}
+		var Map = ebiten.NewImage(100, 100)
+		// TODO Gen map
+		Map.Fill(color.White) //temp
+		// TODO draw map
+
+		MapOpt.GeoM.Scale(Zoom, Zoom)
+		MapOpt.GeoM.Translate(float64(originX), float64(originY))
+		// center map
+		MapOpt.GeoM.Translate(-1*float64(Map.Bounds().Dx())*Zoom/2, -1*float64(Map.Bounds().Dy())*Zoom/2)
+
+		screen.DrawImage(Map, MapOpt)
+		ebitenutil.DebugPrintAt(screen, "MAP", 100, 100)
+	} else {
+		// TODO draw settings
+		ebitenutil.DebugPrintAt(screen, "Settings", 100, 100)
+	}
+
+	// other draws
 	vector.DrawFilledRect(screen, 0, 0, float32(width), float32(barHeight), color.White, true)
 	// message for web with too big screen
 	vector.DrawFilledRect(screen, float32(width), 0, float32(width), 1080, gray, true)
@@ -144,14 +201,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		op.GeoM.Reset()
 
 	}
-	// draw map/settings
-	if buttons[3].toggle {
-		// TODO draw map
-		ebitenutil.DebugPrintAt(screen, "MAP", 100, 100)
-	} else {
-		// TODO draw settings
-		ebitenutil.DebugPrintAt(screen, "Settings", 100, 100)
-	}
+
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -163,6 +213,7 @@ func main() {
 	ebiten.SetWindowTitle("CheckerWars")
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	// temp colors/button icons
+	// toggle pan/select
 	buttons[0].icon1 = ebiten.NewImage(30, 20)
 	buttons[0].icon1.Fill(color.Black)
 	buttons[0].icon2 = ebiten.NewImage(30, 20)
@@ -176,16 +227,15 @@ func main() {
 		}
 	}
 	buttons[0].togglable = true
+	// zoom in
 	buttons[1].icon1 = ebiten.NewImage(40, 40)
 	buttons[1].icon1.Fill(r)
-	buttons[1].run = func(toggle bool) {
-		fmt.Println("Button2")
-	}
+	buttons[1].run = zoomIn
+	// zoom out
 	buttons[2].icon1 = ebiten.NewImage(20, 20)
 	buttons[2].icon1.Fill(g)
-	buttons[2].run = func(toggle bool) {
-		fmt.Println("Button3")
-	}
+	buttons[2].run = zoomOut
+	// toggle map/settings
 	buttons[3].togglable = true
 	buttons[3].icon1 = ebiten.NewImage(20, 20)
 	buttons[3].icon1.Fill(b)
@@ -203,10 +253,15 @@ func main() {
 
 // button functions
 // TODO these functions
-func quit(toggle bool)      {}
-func zoomIn(toggle bool)    {}
-func zoomOut(toggle bool)   {}
-func togglePan(toggle bool) {}
+func quit(toggle bool) {}
+
+// finished
+func zoomIn(toggle bool) {
+	if Zoom > 2*ZoomSpeed {
+		Zoom -= ZoomSpeed
+	}
+}
+func zoomOut(toggle bool) { Zoom += ZoomSpeed }
 
 // TODO
 func readMap(Map string) []Piece {
