@@ -127,26 +127,22 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	var dist = 0.0
 	var op = &ebiten.DrawImageOptions{}
 	for b := 0; b < len(buttons); b++ {
+		// icon sort
+		var iconInfo = *&ebiten.Image{}
 		if !buttons[b].toggle {
-			// icon 1
-			// scale image
-			var scale = barHeight / float64(buttons[b].icon1.Bounds().Dy())
-			op.GeoM.Scale(float64(scale), float64(scale))
-			op.GeoM.Translate(float64(dist), 0)
-			screen.DrawImage(buttons[b].icon1, op)
-			buttons[b].x = dist
-			dist += float64(buttons[b].icon1.Bounds().Dx()) * scale
-			op.GeoM.Reset()
+			iconInfo = *buttons[b].icon1
 		} else {
-			// icon 2
-			var scale = barHeight / float64(buttons[b].icon2.Bounds().Dy())
-			op.GeoM.Scale(float64(scale), float64(scale))
-			op.GeoM.Translate(float64(dist), 0)
-			screen.DrawImage(buttons[b].icon2, op)
-			buttons[b].x = dist
-			dist += float64(buttons[b].icon2.Bounds().Dx()) * scale
-			op.GeoM.Reset()
+			iconInfo = *buttons[b].icon2
 		}
+		// scale image
+		var scale = barHeight / float64(iconInfo.Bounds().Dy())
+		op.GeoM.Scale(float64(scale), float64(scale))
+		op.GeoM.Translate(float64(dist), 0)
+		screen.DrawImage(&iconInfo, op)
+		buttons[b].x = dist
+		dist += float64(iconInfo.Bounds().Dx()) * scale
+		op.GeoM.Reset()
+
 	}
 	// draw map/settings
 	if buttons[3].toggle {
