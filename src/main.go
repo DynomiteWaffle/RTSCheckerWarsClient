@@ -67,6 +67,10 @@ type Game struct {
 	MapWidth int
 	MapType  int
 	Init     bool
+	// workaround for web
+	// window.size does not retrun web size
+	height int
+	width  int
 }
 
 func (g *Game) Update() error {
@@ -138,16 +142,11 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	var width, height = ebiten.WindowSize()
+
+	ebitenutil.DebugPrintAt(screen, strconv.Itoa(g.width), 200, 200)
+	ebitenutil.DebugPrintAt(screen, strconv.Itoa(g.height), 200, 220)
 	// web being weird
-	barHeight = float64(height) / float64(barScale)
-	if height == 0 {
-		height = 1080
-		barHeight = 50
-	}
-	if width == 0 {
-		width = 1080
-	}
+	barHeight = float64(g.height) / float64(barScale)
 	// draw map/settings
 	if buttons[3].toggle {
 		// TODO make it proper size
@@ -170,15 +169,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	// other draws
-	vector.DrawFilledRect(screen, 0, 0, float32(width), float32(barHeight), color.White, true)
-	// message for web with too big screen
-	vector.DrawFilledRect(screen, float32(width), 0, float32(width), 1080, gray, true)
-	ebitenutil.DebugPrintAt(screen, "get the app for fullscreen", width+10, 0)
-	ebitenutil.DebugPrintAt(screen, "github.com/DynomiteWaffle/CheckerWarsClient", width+10, 30) //github link
-	ebitenutil.DebugPrintAt(screen, "dynomitewaffle.itch.io/checker-wars", width+10, 50)         //itch.io link
+	vector.DrawFilledRect(screen, 0, 0, float32(g.width), float32(barHeight), color.White, true) //top banner/button tray
 	// Debug click info
 	var b, x, y = getClick()
-	ebitenutil.DebugPrintAt(screen, strconv.FormatBool(b)+" : "+strconv.Itoa(x)+" : "+strconv.Itoa(y), width+10, 80)
+	ebitenutil.DebugPrintAt(screen, strconv.FormatBool(b)+" : "+strconv.Itoa(x)+" : "+strconv.Itoa(y), 20, g.height-80)
 	// draw buttons
 	// distance from left edge, buttons get added to this
 	var dist = 0.0
@@ -205,6 +199,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	g.width = outsideWidth
+	g.height = outsideHeight
 	return outsideWidth, outsideHeight
 }
 
