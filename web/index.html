@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<head>
+  <meta name="author" content="DynomiteWaffle">
+  <meta name="viewport" content="width=device-width,inital-scale=1.0">
+  <link rel="stylesheet" href="index.css">
+</head>
+<script src="wasm_exec.js"></script>
+<script>
+const go = new Go();
+WebAssembly.instantiateStreaming(fetch("yourgame.wasm"), go.importObject).then(result => {
+    go.run(result.instance);
+});
+</script>
