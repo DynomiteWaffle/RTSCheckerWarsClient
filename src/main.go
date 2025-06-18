@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 package main
 
 import (
@@ -9,6 +11,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
+
+	"syscall/js"
 )
 
 // | 0 - toggle pan/select |
@@ -145,6 +149,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	ebitenutil.DebugPrintAt(screen, strconv.Itoa(g.width), 200, 200)
 	ebitenutil.DebugPrintAt(screen, strconv.Itoa(g.height), 200, 220)
+	doc := js.Global().Get("document")
+	ebitenutil.DebugPrintAt(screen, doc.Get("URL").String(), 600, 600) // this is url to server
 	// web being weird
 	barHeight = float64(g.height) / float64(barScale)
 	// draw map/settings
@@ -179,7 +185,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	var op = &ebiten.DrawImageOptions{}
 	for b := 0; b < len(buttons); b++ {
 		// icon sort
-		var iconInfo = *&ebiten.Image{}
+		var iconInfo = ebiten.Image{}
 		if !buttons[b].toggle {
 			iconInfo = *buttons[b].icon1
 		} else {
